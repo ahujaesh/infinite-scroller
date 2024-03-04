@@ -47,6 +47,9 @@
         threshold: 0.4, // Trigger when the sentinel is 80% visible
       };
 
+      // Set to store unique team names
+      const uniqueTeamNames = new Set();
+
       function handleIntersection(entries, observer) {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
@@ -61,25 +64,26 @@
         for (let i = min; i <= max; i++) {
           const newItem = document.createElement("div");
           newItem.classList.add("item");
-          const teamNumber = i + 1; // Assuming team numbers start from 1
-          lookupTeamName(teamNumber, newItem);
+          lookupTeamName(i, newItem, min, max);
           content.appendChild(newItem);
         }
       }
 
       function loadMoreItems() {
         const len = content.children.length;
-        addElements(len + 1, len + 10);
+        const newMin = len + 1;
+        const newMax = len + 10;
+        addElements(newMin, newMax);
 
         // Move the sentinel to the end
-        content.removeChild(sentinel); // remove from current position
+        content.removeChild(sentinel); // remove from the current position
         content.appendChild(sentinel); // add to the end
 
         // Observe the new position of the sentinel
         observer.observe(sentinel);
       }
 
-      function lookupTeamName(num, targetElement) {
+      function lookupTeamName(num, targetElement, min, max) {
         const teamNumber = num;
 
         // Make a GraphQL query to retrieve the team name based on the team number
@@ -102,7 +106,17 @@
         .then(response => response.json())
         .then(data => {
           const teamName = data.data.teamByNumber ? data.data.teamByNumber.name : 'Team not found';
-          targetElement.innerText = `Team Name: ${teamName}`;
+
+          // Check if the team name is unique
+          if (!uniqueTeamNames.has(teamName)) {
+            uniqueTeamNames.add(teamName);
+
+            // Display team name with team number
+            targetElement.innerText = `Team Name: ${teamName} (Team Number: ${teamNumber})`;
+          } else {
+            // If not unique, try with the next team number
+            lookupTeamName(num + 1, targetElement, min, max);
+          }
         })
         .catch(error => console.error('Error:', error));
       }
