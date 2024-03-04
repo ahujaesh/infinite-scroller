@@ -31,88 +31,84 @@
   </head>
   <body>
     <div id="header">
-      <h1>This Website is a TikTok style infinite scroller, that will load infinitly many FTC team names.</h1>
+      <h1>This Website is a TikTok style infinite scroller, that will load infinitely many FTC team names.</h1>
       <p> Credit to <a href="https://ftcscout.org/api">https://ftcscout.org/api</a> for the team names.</p>
     </div>
     <div id="content">
-          <div class="item"><p id="1">Item 1</p></div>
-          <div class="item"><p id="2">Item 2</div>
-          <div class="item"><p id="3">Item 3</div>
-          <div class="item"><p id="4">Item 4</div>
-          <div class="item"><p id="5">Item 5</div>
-          <div class="item"><p id="6">Item 6</div>
-          <div class="item"><p id="7">Item 7</div>
-          <div class="item"><p id="8">Item 8</div>
-          <div class="item"><p id="9">Item 9</div>
-          <div class="item"><p id="10">Item 10</div>
-          <div class="sentinel"></div>
-      </div>
-      <script>
-         const content = document.getElementById("content");
-          const sentinel = document.querySelector(".sentinel");
-          const options = {
-              root: null,
-              rootMargin: "0px",
-              threshold: 0.4, // Trigger when the sentinel is 80% visible
-          };
-  
-          function handleIntersection(entries, observer) {
-              entries.forEach((entry) => {
-              if (entry.isIntersecting) {
-                  setTimeout(loadMoreItems, 500); // mimic async call
-              }
-              });
+      <div class="sentinel"></div>
+    </div>
+
+    <script>
+      const content = document.getElementById("content");
+      const sentinel = document.querySelector(".sentinel");
+      const options = {
+        root: null,
+        rootMargin: "0px",
+        threshold: 0.4, // Trigger when the sentinel is 80% visible
+      };
+
+      function handleIntersection(entries, observer) {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setTimeout(() => {
+              loadMoreItems();
+            }, 500); // mimic async call
           }
-  
-          function addElements(min, max){
-              for (let i = min; i <= max; i++) {
-                  const newItem = document.createElement("div");
-                  newItem.classList.add("item");
-                  // newItem.textContent = "Item " + i;
-                  const nam = lookupTeamName(12857)
-                  newItem.textContent = nam;
-                  content.appendChild(newItem);
-              }
-          }
-          function loadMoreItems() {
-              // Simulate loading more items
-              const len = content.children.length;
-              content.removeChild(sentinel); // remove from current position
-              addElements(len, len+5)
-              content.appendChild(sentinel); // add before last 4 elements
-              addElements(len+6, len+10)
-          }
-  
-        const observer = new IntersectionObserver(handleIntersection, options);
+        });
+      }
+
+      function addElements(min, max) {
+        for (let i = min; i <= max; i++) {
+          const newItem = document.createElement("div");
+          newItem.classList.add("item");
+          const teamNumber = i + 1; // Assuming team numbers start from 1
+          lookupTeamName(teamNumber, newItem);
+          content.appendChild(newItem);
+        }
+      }
+
+      function loadMoreItems() {
+        const len = content.children.length;
+        addElements(len + 1, len + 10);
+
+        // Move the sentinel to the end
+        content.removeChild(sentinel); // remove from current position
+        content.appendChild(sentinel); // add to the end
+
+        // Observe the new position of the sentinel
         observer.observe(sentinel);
+      }
 
-        function lookupTeamName(int num) {
-      const teamNumber = num;
+      function lookupTeamName(num, targetElement) {
+        const teamNumber = num;
 
-      // Make a GraphQL query to retrieve the team name based on the team number
-      fetch('https://api.ftcscout.org/graphql', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: JSON.stringify({
-          query: `
-            {
-              teamByNumber(number: ${teamNumber}) {
-                name
+        // Make a GraphQL query to retrieve the team name based on the team number
+        fetch('https://api.ftcscout.org/graphql', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          body: JSON.stringify({
+            query: `
+              {
+                teamByNumber(number: ${teamNumber}) {
+                  name
+                }
               }
-            }
-          `,
-        }),
-      })
-      .then(response => response.json())
-      .then(data => {
-        const teamName = data.data.teamByNumber ? data.data.teamByNumber.name : 'Team not found';
-        document.getElementById('teamName').innerText = `Team Name: ${teamName}`;
-      })
-      .catch(error => console.error('Error:', error));
-    }
-      </script>
+            `,
+          }),
+        })
+        .then(response => response.json())
+        .then(data => {
+          const teamName = data.data.teamByNumber ? data.data.teamByNumber.name : 'Team not found';
+          targetElement.innerText = `Team Name: ${teamName}`;
+        })
+        .catch(error => console.error('Error:', error));
+      }
+
+      const observer = new IntersectionObserver(handleIntersection, options);
+      observer.observe(sentinel);
+    </script>
   </body>
 </html>
