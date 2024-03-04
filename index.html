@@ -50,6 +50,7 @@
 
       // Set to store unique team names
       const uniqueTeamNames = new Set();
+      const triedNum = new Set();
 
       function handleIntersection(entries, observer) {
         entries.forEach((entry) => {
@@ -66,6 +67,7 @@
           const newItem = document.createElement("div");
           newItem.classList.add("item");
           lookupTeamName(i, newItem, min, max);
+          triedNum.add(i);
           content.appendChild(newItem);
         }
       }
@@ -116,7 +118,59 @@
             targetElement.innerText = `Team Name: ${teamName} (Team Number: ${teamNumber})`;
           } else {
             // If not unique, try with the next team number
-            lookupTeamName(num + 1, targetElement, min, max);
+            // if (!triedNum.has(num){
+            //   lookupTeamName(num + 1, targetElement, min, max);
+            //   triedNum.add(num);
+            // }
+            while(uniqueTeamNames.has(teamName) || triedNum.has(num){
+              if (triedNum.has(num)){
+                num = num + 1;
+              }
+              lookupTeamName(num + 1, targetElement, min, max)
+              if (uniqueTeamNames.has(teamName) {
+                triedNum.add(num);
+                num = num + 1;
+              }
+            }
+
+            
+            // } elseif (!triedNum.has(num + 2){
+            //   lookupTeamName(num + 2, targetElement, min, max);
+            //   triedNum.add(num + 2);
+            // }elseif (!triedNum.has(num + 3){
+            //   lookupTeamName(num + 3, targetElement, min, max);
+            //   triedNum.add(num + 3);
+            // }elseif (!triedNum.has(num + 4){
+            //   lookupTeamName(num + 4, targetElement, min, max);
+            //   triedNum.add(num + 4);
+            // }elseif (!triedNum.has(num + 5){
+            //   lookupTeamName(num + 5, targetElement, min, max);
+            //   triedNum.add(num + 5);
+            // }elseif (!triedNum.has(num + 6){
+            //   lookupTeamName(num + 6, targetElement, min, max);
+            //   triedNum.add(num + 6);
+            // }elseif (!triedNum.has(num + 7){
+            //   lookupTeamName(num + 7, targetElement, min, max);
+            //   triedNum.add(num + 7);
+            // }elseif (!triedNum.has(num + 8){
+            //   lookupTeamName(num + 8, targetElement, min, max);
+            //   triedNum.add(num + 8);
+            // }elseif (!triedNum.has(num + 9){
+            //   lookupTeamName(num + 9, targetElement, min, max);
+            //   triedNum.add(num + 9);
+            // }elseif (!triedNum.has(num + 10){
+            //   lookupTeamName(num + 10, targetElement, min, max);
+            //   triedNum.add(num + 10);
+            // }elseif (!triedNum.has(num + 11){
+            //   lookupTeamName(num + 11, targetElement, min, max);
+            //   triedNum.add(num + 11);
+            // }elseif (!triedNum.has(num + 12){
+            //   lookupTeamName(num + 12, targetElement, min, max);
+            //   triedNum.add(num + 12);
+            // }elseif (!triedNum.has(num + 13){
+            //   lookupTeamName(num + 13, targetElement, min, max);
+            //   triedNum.add(num + 13);
+            // }
           }
         })
         .catch(error => console.error('Error:', error));
