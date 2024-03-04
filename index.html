@@ -8,7 +8,7 @@
     <meta name="author" content="Eshaan Ahuja">
     <link rel="icon" href="favicon.png" type="image/x-icon">
     
-    <title>TikTok Style Infinite Scroller</title>
+    <title>FTC Infinite Scroller</title>
 
     <style>
       body {
@@ -30,17 +30,21 @@
     </style>
   </head>
   <body>
+    <div id="header">
+      <h1>This Website is a TikTok style infinite scroller, that will load infinitly many FTC team names.</h1>
+      <p> Credit to <a href="https://ftcscout.org/api">https://ftcscout.org/api</a> for the team names.</p>
+    </div>
     <div id="content">
-          <div class="item">Item 1</div>
-          <div class="item">Item 2</div>
-          <div class="item">Item 3</div>
-          <div class="item">Item 4</div>
-          <div class="item">Item 5</div>
-          <div class="item">Item 6</div>
-          <div class="item">Item 7</div>
-          <div class="item">Item 8</div>
-          <div class="item">Item 9</div>
-          <div class="item">Item 10</div>
+          <div class="item"><p id="1">Item 1</p></div>
+          <div class="item"><p id="2">Item 2</div>
+          <div class="item"><p id="3">Item 3</div>
+          <div class="item"><p id="4">Item 4</div>
+          <div class="item"><p id="5">Item 5</div>
+          <div class="item"><p id="6">Item 6</div>
+          <div class="item"><p id="7">Item 7</div>
+          <div class="item"><p id="8">Item 8</div>
+          <div class="item"><p id="9">Item 9</div>
+          <div class="item"><p id="10">Item 10</div>
           <div class="sentinel"></div>
       </div>
       <script>
@@ -49,7 +53,7 @@
           const options = {
               root: null,
               rootMargin: "0px",
-              threshold: 0.8, // Trigger when the sentinel is 80% visible
+              threshold: 0.4, // Trigger when the sentinel is 80% visible
           };
   
           function handleIntersection(entries, observer) {
@@ -64,7 +68,9 @@
               for (let i = min; i <= max; i++) {
                   const newItem = document.createElement("div");
                   newItem.classList.add("item");
-                  newItem.textContent = "Item " + i;
+                  // newItem.textContent = "Item " + i;
+                  const nam = lookupTeamName(12857)
+                  newItem.textContent = nam;
                   content.appendChild(newItem);
               }
           }
@@ -79,6 +85,34 @@
   
         const observer = new IntersectionObserver(handleIntersection, options);
         observer.observe(sentinel);
+
+        function lookupTeamName(int num) {
+      const teamNumber = num;
+
+      // Make a GraphQL query to retrieve the team name based on the team number
+      fetch('https://api.ftcscout.org/graphql', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+          query: `
+            {
+              teamByNumber(number: ${teamNumber}) {
+                name
+              }
+            }
+          `,
+        }),
+      })
+      .then(response => response.json())
+      .then(data => {
+        const teamName = data.data.teamByNumber ? data.data.teamByNumber.name : 'Team not found';
+        document.getElementById('teamName').innerText = `Team Name: ${teamName}`;
+      })
+      .catch(error => console.error('Error:', error));
+    }
       </script>
   </body>
 </html>
