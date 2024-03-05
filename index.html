@@ -39,95 +39,93 @@
       <div class="sentinel"></div>
     </div>
 
-    <script>
-      const content = document.getElementById("content");
-      const sentinel = document.querySelector(".sentinel");
-      const options = {
-        root: null,
-        rootMargin: "0px",
-        threshold: 0.4, // Trigger when the sentinel is 80% visible
-      };
+<script>
+  const content = document.getElementById("content");
+  const sentinel = document.querySelector(".sentinel");
+  const options = {
+    root: null,
+    rootMargin: "0px",
+    threshold: 0.4, // Trigger when the sentinel is 80% visible
+  };
 
-      // Set to store unique team names
-      const uniqueTeamNames = new Set();
+  const uniqueTeamNames = new Set(["Team not found"]);
+  const checkedTeamNumbers = new Set();
 
-      function handleIntersection(entries, observer) {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setTimeout(() => {
-              loadMoreItems();
-            }, 500); // mimic async call
-          }
-        });
+  function handleIntersection(entries, observer) {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => {
+          loadMoreItems();
+        }, 500); 
       }
+    });
+  }
 
-      function addElements(min, max) {
-        for (let i = min; i <= max; i++) {
-          const newItem = document.createElement("div");
-          newItem.classList.add("item");
-          lookupTeamName(i, newItem, min, max);
-          content.appendChild(newItem);
-        }
+  function addElements(min, max) {
+    for (let i = min; i <= max; i++) {
+      if (!checkedTeamNumbers.has(i)) {
+        const newItem = document.createElement("div");
+        newItem.classList.add("item");
+        lookupTeamName(i, newItem, min, max);
+        content.appendChild(newItem);
       }
+    }
+  }
 
-      function loadMoreItems() {
-        const len = content.children.length;
-        const newMin = len + 1;
-        const newMax = len + 10;
-        addElements(newMin, newMax);
+  function loadMoreItems() {
+    const len = content.children.length;
+    const newMin = len + 1;
+    const newMax = len + 10;
+    addElements(newMin, newMax);
+    content.removeChild(sentinel); 
+    content.appendChild(sentinel); 
+    observer.observe(sentinel);
+  }
 
-        // Move the sentinel to the end
-        content.removeChild(sentinel); // remove from the current position
-        content.appendChild(sentinel); // add to the end
+  function lookupTeamName(num, targetElement, min, max) {
+    const teamNumber = num;
 
-        // Observe the new position of the sentinel
-        observer.observe(sentinel);
-      }
+    if (checkedTeamNumbers.has(teamNumber)) {
+      lookupTeamName(num + 1, targetElement, min, max);
+      return;
+    }
 
-      function lookupTeamName(num, targetElement, min, max) {
-        const teamNumber = num;
-
-        fetch('https://api.ftcscout.org/graphql', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          },
-          body: JSON.stringify({
-            query: `
-              {
-                teamByNumber(number: ${teamNumber}) {
-                  name
-                }
-              }
-            `,
-          }),
-        })
-        .then(response => response.json())
-        .then(data => {
-          const teamName = data.data.teamByNumber ? data.data.teamByNumber.name : 'Team not found';
-
-          // Check if the team name is unique
-          if (!uniqueTeamNames.has(teamName)) {
-            uniqueTeamNames.add(teamName);
-
-            // Display team name with team number
-            targetElement.innerText = `Team Name: ${teamName} (Team Number: ${teamNumber})`;
-
-            // Fetch the next team name recursively
-            if (num < max) {
-              lookupTeamName(num + 1, document.createElement("div"), min, max);
+    fetch('https://api.ftcscout.org/graphql', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify({
+        query: `
+          {
+            teamByNumber(number: ${teamNumber}) {
+              name
             }
-          } else {
-            // If not unique, fetch the next team name recursively
-            lookupTeamName(num + 1, targetElement, min, max);
           }
-        })
-        .catch(error => console.error('Error:', error));
-      }
+        `,
+      }),
+    })
+    .then(response => response.json())
+    .then(data => {
+      const teamName = data.data.teamByNumber ? data.data.teamByNumber.name : 'Team not found';
 
-      const observer = new IntersectionObserver(handleIntersection, options);
-      observer.observe(sentinel);
-    </script>
-  </body>
+      if (!uniqueTeamNames.has(teamName)) {
+        uniqueTeamNames.add(teamName);
+        checkedTeamNumbers.add(teamNumber);
+        targetElement.innerText = `Team Name: ${teamName} (Team Number: ${teamNumber})`;
+        if (num < max) {
+          lookupTeamName(num + 1, document.createElement("div"), min, max);
+        }
+      } else {
+        lookupTeamName(num + 1, targetElement, min, max);
+      }
+    })
+    .catch(error => console.error('Error:', error));
+  }
+
+  const observer = new IntersectionObserver(handleIntersection, options);
+  observer.observe(sentinel);
+</script>
+</body>
 </html>
